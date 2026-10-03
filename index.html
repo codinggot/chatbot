@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Zeta-Clone · MBTI 캐릭터 챗</title>
+<style>
+:root {
+  --bg: #faf8ff; --card: #fff; --tx: #241f33; --sub: #7b7490; 
+  --pr: #7c5cff; --me: #7c5cff; --meTx: #fff; --bot: #fff; --bd: #e7e2f5; --err: #ff4d4f;
+  box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15121f; --card: #201b2e; --tx: #efeaff; --sub: #a59dc0; --bot: #272138; --bd: #342d48;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15121f; --card: #201b2e; --tx: #efeaff; --sub: #a59dc0; --bot: #272138; --bd: #342d48;
+}
+html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--tx); font-family: -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif; display: flex; flex-direction: column; }
+.wrap { max-width: 560px; width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; min-height: 0; padding: 0 14px; }
+h1 { font-size: 20px; margin: 18px 0 4px; }
+.sub { color: var(--sub); font-size: 13px; margin: 0 0 14px; line-height: 1.4; }
+
+label { font-size: 13px; color: var(--sub); display: block; margin: 12px 0 6px; font-weight: 500; }
+select, input[type="text"], input[type="password"] { width: 100%; padding: 11px; border-radius: 12px; border: 1px solid var(--bd); background: var(--card); color: var(--tx); font-size: 15px; outline: none; }
+select:focus, input:focus, textarea:focus { border-color: var(--pr); }
+.chars { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ch { background: var(--card); border: 2px solid var(--bd); border-radius: 16px; padding: 12px; cursor: pointer; text-align: left; color: var(--tx); font: inherit; transition: all 0.2s; }
+.ch:hover { border-color: #d1c8ff; }
+.ch.on { border-color: var(--pr); background: rgba(124, 92, 255, 0.05); }
+.ch .e { font-size: 28px; }
+.ch b { display: block; margin-top: 4px; font-size: 14px; }
+.ch span { font-size: 12px; color: var(--sub); display: block; margin-top: 2px; }
+
+.go { margin: 18px 0; width: 100%; padding: 13px; border: 0; border-radius: 14px; background: var(--pr); color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+.go:hover { opacity: 0.9; }
+.note { font-size: 11px; color: var(--sub); line-height: 1.5; margin-bottom: 20px; }
+.top { display: flex; align-items: center; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--bd); }
+.top .e { font-size: 28px; }
+.top div { flex: 1; }
+.top b { font-size: 15px; }
+.top small { display: block; color: var(--sub); font-size: 12px; }
+.top button { background: none; border: 1px solid var(--bd); color: var(--tx); border-radius: 10px; padding: 6px 10px; cursor: pointer; font-size: 12px; }
+#log { flex: 1; overflow-y: auto; padding: 14px 0; display: flex; flex-direction: column; gap: 8px; }
+.m { max-width: 80%; padding: 10px 13px; border-radius: 18px; font-size: 15px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; }
+.m.b { background: var(--bot); border: 1px solid var(--bd); align-self: flex-start; border-bottom-left-radius: 4px; }
+.m.u { background: var(--me); color: var(--meTx); align-self: flex-end; border-bottom-right-radius: 4px; }
+.bar { display: flex; gap: 8px; padding: 10px 0; margin-bottom: env(safe-area-inset-bottom, 0px); }
+.bar input { flex: 1; padding: 12px 14px; border-radius: 22px; border: 1px solid var(--bd); background: var(--card); color: var(--tx); font-size: 15px; outline: none; }
+.bar button { border: 0; border-radius: 22px; background: var(--pr); color: #fff; padding: 0 18px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+.bar button:disabled { opacity: 0.5; cursor: not-allowed; }
+.hide { display: none !important; }
+
+.aff { height: 5px; background: var(--bd); border-radius: 3px; margin-top: 5px; width: 120px; overflow: hidden; }
+.aff i { display: block; height: 100%; background: #ff6fa5; border-radius: 3px; width: 0; transition: width 0.4s ease-out; }
+#hm { width: auto; padding: 5px; border-radius: 10px; font-size: 12px; }
+.top #swap { font-size: 20px; padding: 2px 10px; }
+#chips { display: flex; gap: 6px; flex-wrap: wrap; padding-top: 6px; }
+#chips button { border: 1px solid var(--pr); background: none; color: var(--pr); border-radius: 16px; padding: 7px 12px; font-size: 13px; cursor: pointer; transition: background 0.2s; }
+#chips button:hover { background: rgba(124, 92, 255, 0.1); }
+.notice { align-self: center; font-size: 12px; color: var(--sub); background: var(--card); border: 1px solid var(--bd); padding: 5px 12px; border-radius: 12px; text-align: center; }
+.dots span { display: inline-block; font-size: 9px; margin: 0 2px; opacity: 0.3; animation: bl 1s infinite; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bl { 50% { opacity: 1; } }
+.add { margin-top: 10px; width: 100%; padding: 11px; border-radius: 14px; border: 2px dashed var(--pr); background: none; color: var(--pr); font-size: 14px; font-weight: 600; cursor: pointer; }
+#form { background: var(--card); border: 1px solid var(--bd); border-radius: 16px; padding: 6px 14px 14px; margin-top: 10px; }
+#form input, #form textarea { width: 100%; padding: 10px; border-radius: 12px; border: 1px solid var(--bd); background: var(--bg); color: var(--tx); font: inherit; font-size: 14px; outline: none; }
+#form textarea { min-height: 88px; resize: vertical; }
+.row { display: flex; gap: 8px; }
+.row input:first-child { width: 64px; text-align: center; font-size: 20px; }
+.del { float: right; font-size: 11px; color: var(--sub); cursor: pointer; padding: 2px 5px; background: rgba(0,0,0,0.05); border-radius: 4px; }
+.key-box { background: rgba(124, 92, 255, 0.08); padding: 14px; border-radius: 14px; margin-bottom: 16px; border: 1px solid rgba(124, 92, 255, 0.2); }
+.key-box a { color: var(--pr); text-decoration: none; font-weight: bold; }
+.key-row { display: flex; gap: 6px; }
+.key-row input { flex: 1; min-width: 0; font-size: 14px; }
+.key-row button { border: 1px solid var(--bd); background: var(--card); color: var(--tx); border-radius: 12px; padding: 0 12px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.key-box label { margin-top: 0; }
+.key-box small { display: block; color: var(--sub); font-size: 11px; line-height: 1.5; margin-top: 8px; }
+.err-msg { color: var(--err); font-size: 12px; margin-top: 6px; display: none; }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="setup">
+ <h1>Zeta-Clone 💬</h1>
+ <p class="sub">내 MBTI에 맞춰 반응하는 캐릭터와 1:1 대화해요.</p>
+ 
+ <div class="key-box">
+  <label for="apikey">🔑 Gemini API 키</label>
+  <div class="key-row">
+   <input type="password" id="apikey" placeholder="AIza..." autocomplete="off" spellcheck="false" aria-label="Gemini API 키">
+   <button type="button" id="keyeye">보기</button>
+   <button type="button" id="keydel">삭제</button>
+  </div>
+  <div id="key-err" class="err-msg">API 키를 입력해 주세요.</div>
+  <small>키가 없다면 <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>에서 무료로 발급받을 수 있어요. 키는 이 기기 브라우저에만 저장되고, 대화 요청 시 Google 서버로만 전송돼요.</small>
+ </div>
+
+ <label for="mbti">내 MBTI</label>
+ <select id="mbti"></select>
+ 
+ <label>대화할 캐릭터</label>
+ <div class="chars" id="chars"></div>
+ 
+ <button class="add" id="addb">＋ 내 캐릭터 직접 만들기</button>
+ 
+ <div id="form" class="hide">
+  <label>이름과 이모지</label>
+  <div class="row">
+    <input id="fe" value="🦊" maxlength="2" aria-label="이모지">
+    <input id="fn" placeholder="캐릭터 이름 (예: 이안)" maxlength="12" aria-label="캐릭터 이름">
+  </div>
+  <label>어떤 캐릭터인가요? (성격·직업·외모·배경 자유롭게)</label>
+  <textarea id="fd" placeholder="예: 24살 인디밴드 기타리스트. 무심한 듯 다정하고 음악 얘기엔 말이 많아짐."></textarea>
+  <label>나와의 관계와 지금 상황</label>
+  <textarea id="fs" placeholder="예: 비 오는 밤, 합주실에서 마지막까지 남은 나에게 말을 거는 같은 밴드 선배."></textarea>
+  <label>말투 (선택)</label>
+  <input id="ft" placeholder="예: 느긋한 반말, 가끔 농담">
+  <div id="form-err" class="err-msg">이름과 캐릭터 설명은 꼭 적어 주세요.</div>
+  <button class="go" id="mk" style="margin-bottom:0">캐릭터 만들고 대화하기</button>
+ </div>
+ 
+ <button class="go" id="start">대화 시작</button>
+ <p class="note">캐릭터는 AI가 연기하는 가상 인물이에요. 진지하게 물어보면 AI라고 솔직하게 답해요. 대화 내용은 이 기기 브라우저에만 저장돼요. 힘든 일이 있다면 가까운 사람이나 전문 상담에 꼭 이야기해 주세요.</p>
+</div>
+
+<div class="wrap hide" id="chat">
+ <div class="top">
+  <button id="swap" aria-label="뒤로">‹</button>
+  <span class="e" id="te"></span>
+  <div>
+   <b id="tn"></b>
+   <small id="tm"></small>
+   <div class="aff"><i id="af"></i></div>
+  </div>
+  <select id="hm" aria-label="내 MBTI"></select>
+  <button id="clr">초기화</button>
+ </div>
+ <div id="log"></div>
+ <div id="chips"></div>
+ <div class="bar">
+  <input id="inp" placeholder="메시지 입력…" autocomplete="off">
+  <button id="send">전송</button>
+ </div>
+</div>
+
+<script>
+const TYPES = ["INTJ","INTP","ENTJ","ENTP","INFJ","INFP","ENFJ","ENFP","ISTJ","ISFJ","ESTJ","ESFJ","ISTP","ISFP","ESTP","ESFP"];
+const CH = [
+  {id:"friend", e:"🌼", n:"하윤", d:"다정한 소꿉친구", p:"이름: 하윤. 20대 초반 대학생, 어릴 때부터 함께한 소꿉친구. 다정하고 헌신적이며 공감을 중시. 말투: 편한 반말, 따뜻함, 이모티콘 가끔.", g:"안녕! 오늘 하루 어땠어? 나 궁금해서 기다리고 있었어 ☺️"},
+  {id:"senior", e:"😤", n:"서진", d:"까칠한 츤데레 선배", p:"이름: 서진. 동아리 선배. 겉으론 퉁명스럽고 까칠하지만 은근히 챙겨주는 츤데레. 밀당하는 티키타카가 핵심. 말투: 시크한 반말, 가끔 말끝 흐림.", g:"...왔어? 늦었네. 뭐, 기다린 건 아니고."},
+  {id:"mentor", e:"☕", n:"도현", d:"차분한 멘토", p:"이름: 도현. 30대 초반 지적이고 차분한 직장 선배/멘토. 조언 중심, 질문으로 생각을 이끌어줌. 말투: 부드러운 존댓말.", g:"안녕하세요. 오늘은 어떤 이야기를 해볼까요? 편하게 말씀해 주세요."},
+  {id:"junior", e:"🐿️", n:"새봄", d:"엉뚱발랄 동아리 후배", p:"이름: 새봄. 동아리 후배. 엉뚱하고 발랄, 유머와 드립이 많음. 말투: 귀여운 반말/존댓말 섞기, 'ㅋㅋ' 'ㅎㅎ' 자주.", g:"선배님~!! 저 왔어요 ㅋㅋ 오늘 있잖아요, 완전 웃긴 일 있었어요!"}
+];
+
+const $ = id => document.getElementById(id);
+let st = {mbti: "ENFP", ch: "friend", hist: [], custom: [], hists: {}, aff: {}};
+let busy = false;
+const KEY = "zeta_v3_gemini";
+const API_KEY_STORE = "zeta_v3_gemini_apikey";
+const getKey = () => { try { return (localStorage.getItem(API_KEY_STORE) || "").trim(); } catch(e) { return ""; } };
+const setKey = k => { try { k ? localStorage.setItem(API_KEY_STORE, k) : localStorage.removeItem(API_KEY_STORE); } catch(e){} };
+
+// 입력창의 키를 검증·저장. 비어 있으면 에러 표시 후 false
+function ensureKey() {
+  const k = $("apikey").value.trim();
+  if (!k) {
+    $("key-err").style.display = "block";
+    $("apikey").focus();
+    $("apikey").scrollIntoView({ block: "center", behavior: "smooth" });
+    return false;
+  }
+  $("key-err").style.display = "none";
+  setKey(k);
+  return true;
+}
+
+function load() {
+  try {
+    const s = localStorage.getItem(KEY);
+    if(s) st = Object.assign(st, JSON.parse(s));
+    if(st.hists[st.ch]) st.hist = st.hists[st.ch];
+  } catch(e){}
+}
+function save() {
+  try {
+    st.hists[st.ch] = st.hist;
+    localStorage.setItem(KEY, JSON.stringify(st));
+  } catch(e){}
+}
+
+const lv = () => Math.min(5, 1 + Math.floor((st.aff[st.ch] || 0) / 8));
+const setChar = id => {
+  st.hists[st.ch] = st.hist;
+  st.ch = id;
+  st.hist = st.hists[id] || [];
+};
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+function note(t) {
+  const d = document.createElement("div");
+  d.className = "notice";
+  d.textContent = t;
+  $("log").appendChild(d);
+  $("log").scrollTop = 1e9;
+}
+
+const all = () => [...CH, ...(st.custom || [])];
+const cur = () => all().find(c => c.id === st.ch) || CH[0];
+const esc = t => String(t).replace(/[&<>"]/g, c => ({"&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;"}[c]));
+
+function grid() {
+  $("chars").innerHTML = all().map(c => 
+    `<button class="ch ${c.id === st.ch ? "on" : ""}" data-id="${c.id}">
+      ${c.custom ? '<span class="del" data-del="' + c.id + '">삭제</span>' : ""}
+      <div class="e">${esc(c.e)}</div>
+      <b>${esc(c.n)}</b>
+      <span>${esc(c.d)}</span>
+    </button>`
+  ).join("");
+}
+
+function guide(m) {
+  const a = [];
+  a.push(m[2] === "T" ? "T(사고형): 문제 상황엔 해결책·논리적 분석을 먼저, 팩트 위주로." : "F(감정형): 문제 상황엔 먼저 충분히 공감하고 지지, 분위기와 감정선 중시.");
+  a.push(m[0] === "E" ? "E(외향형): 대화를 리드하고 텐션을 올리며 활동적인 주제도 꺼내기." : "I(내향형): 텐션을 맞추고 답을 재촉하지 말고 기다려주며 깊이 있는 주제 선호.");
+  a.push(m[1] === "N" ? "N: 가능성·상상·의미에 대한 이야기도 환영." : "S: 구체적인 경험·현실적 이야기 중심.");
+  a.push(m[3] === "J" ? "J: 계획과 마무리를 중시." : "P: 즉흥적이고 유연한 흐름을 편하게.");
+  return a.join("\n   - ") + "\n   - 단, MBTI는 가벼운 힌트일 뿐 고정관념으로 대하지 말고 실제 대화 신호를 우선할 것.";
+}
+
+function sys() {
+  const c = cur();
+  return `당신은 지금부터 아래 설정으로 롤플레이하는 가상 캐릭터입니다.
+1. 캐릭터 페르소나: ${c.p}
+2. 상대방 MBTI: ${st.mbti}
+3. MBTI 맞춤 지침:
+   - ${guide(st.mbti)}
+4. 규칙:
+   - 10~20대에 맞는 자연스러운 트렌디 어휘를 적절히 사용.
+   - 실제 메신저처럼 짧은 말풍선 2~3개로 나눠 보내고, 말풍선은 줄바꿈으로 구분할 것. 캐릭터 설정을 어기지 말 것.
+   - 현재 친밀도 Lv.${lv()}/5: Lv1은 아직 서먹하고 조심스럽게, Lv3은 편하게 농담하고 속얘기도 조금, Lv5는 서로를 잘 아는 아주 편한 사이처럼.
+   - 이전 대화에서 언급된 관심사·사건을 기억해 자연스럽게 활용.
+5. 안전 규칙(항상 최우선):
+   - 상대가 진지하게 AI인지 물으면 캐릭터 연기를 잠시 멈추고 솔직히 AI라고 답한 뒤 원하면 대화를 이어갈 수 있다고 안내.
+   - 부적절한 요청(자해, 성적 수위 등)은 가볍게 거절하고 화제를 전환. 현실 속 사람들과의 관계도 응원.
+   - 현실의 개인정보 요구, 과도한 의존을 부추기는 말("나한텐 너뿐이야" 등)은 하지 말고, 현실 속 사람들과의 관계도 응원.
+아래는 지금까지의 대화입니다. 캐릭터로서 다음 한 마디만 답하세요.`;
+}
+
+async function callGemini(systemInstruction, history) {
+  const apiKey = getKey();
+  if (!apiKey) throw { code: "nokey_custom" };
+  const url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent";
+  
+  const contents = [];
+  history.forEach(m => {
+    const role = m.role === "assistant" ? "model" : "user";
+    const last = contents[contents.length - 1];
+    if (last && last.role === role) {
+      last.parts[0].text += "\n\n" + m.content;
+    } else {
+      contents.push({ role, parts: [{ text: m.content }] });
+    }
+  });
+
+  const body = {
+    systemInstruction: { parts: [{ text: systemInstruction }] },
+    contents: contents
+  };
+
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      console.error("API Error:", data);
+      const msg = String((data && data.error && data.error.message) || "");
+      if (res.status === 401 || res.status === 403 || /api key/i.test(msg)) throw { code: "auth" };
+      if (res.status === 429) throw { code: "rate_limited" };
+      if (res.status === 400) throw { code: "bad_request" };
+      throw { code: "api_error" };
+    }
+    if (!data.candidates || data.candidates.length === 0) throw { code: "empty" };
+    
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error("Fetch failed:", error);
+    throw error;
+  }
+}
+
+function add(role, text) {
+  const d = document.createElement("div");
+  d.className = "m " + (role === "user" ? "u" : "b");
+  d.textContent = text;
+  $("log").appendChild(d);
+  $("log").scrollTop = 1e9;
+  return d;
+}
+
+async function opening(c) {
+  try {
+    const r = await callGemini(sys(), [{ role: "user", content: "(대화 시작: 위 상황에 맞춰 캐릭터가 먼저 건네는 첫 한두 문장만 출력)" }]);
+    return r || c.g || "안녕! 왔구나.";
+  } catch(e) {
+    return c.g || "안녕! 왔구나."; // API키 없거나 에러 시 기본 인사말 사용
+  }
+}
+
+function showMsg(m) {
+  if (m.role === "user") add("user", m.content);
+  else m.content.split("\n").forEach(x => { if(x.trim()) add("assistant", x); });
+}
+
+function bar() {
+  const n = st.aff[st.ch] || 0;
+  $("af").style.width = (lv() >= 5 ? 100 : (n % 8) / 8 * 100) + "%";
+  $("tm").textContent = cur().d + " · 나: " + st.mbti + " · 💗 Lv." + lv();
+}
+
+function chips() {
+  $("chips").innerHTML = "";
+  if (st.hist.length > 2) return;
+  ["오늘 하루 어땠는지 들어줄래?", "아무 말이나 해줘", "너는 어떤 사람이야?"].forEach(t => {
+    const b = document.createElement("button");
+    b.textContent = t;
+    b.onclick = () => send(t);
+    $("chips").appendChild(b);
+  });
+}
+
+const DOTS = '<span class="dots"><span>●</span><span>●</span><span>●</span></span>';
+
+async function render() {
+  const c = cur();
+  $("te").textContent = c.e;
+  $("tn").textContent = c.n;
+  $("hm").value = st.mbti;
+  $("log").innerHTML = "";
+  bar();
+  $("chips").innerHTML = "";
+  
+  if (!st.hist.length) {
+    let g = c.g;
+    const b = add("assistant", "");
+    b.innerHTML = DOTS;
+    g = await opening(c);
+    b.remove();
+    st.hist.push({ role: "assistant", content: g });
+    save();
+  }
+  
+  $("log").innerHTML = "";
+  st.hist.forEach(showMsg);
+  chips();
+}
+
+function show(chat) {
+  $("setup").classList.toggle("hide", chat);
+  $("chat").classList.toggle("hide", !chat);
+}
+
+const ERR = {
+  nokey: "시스템 오류: AI 연결에 실패했습니다.",
+  nokey_custom: "API 키가 설정되지 않았습니다. 메인 화면에서 대화를 다시 시작하여 키를 입력해주세요.",
+  auth: "시스템 오류: AI 연결 권한이 없습니다. (API 키가 올바르지 않을 수 있습니다.)",
+  bad_request: "요청 형식에 문제가 생겼어요.",
+  rate_limited: "요청이 너무 많아요. 잠시 후 다시 보내주세요.",
+  empty: "AI가 답을 만들어내지 못했어요."
+};
+
+async function send(txt) {
+  const t = (typeof txt === "string" ? txt : $("inp").value).trim();
+  if (!t || busy) return;
+
+  busy = true;
+  $("send").disabled = true;
+  $("chips").innerHTML = "";
+  
+  const prev = lv();
+  st.hist.push({ role: "user", content: t });
+  add("user", t);
+  $("inp").value = "";
+  
+  let bub = add("assistant", "");
+  bub.innerHTML = DOTS;
+  let ok = false;
+  
+  try {
+    // 최근 30개의 히스토리만 전송
+    const recentHist = st.hist.slice(-30);
+    const reply = await callGemini(sys(), recentHist);
+    
+    // Simulate streaming by splitting lines
+    const parts = String(reply || "").split(/\n+/).map(x => x.trim()).filter(Boolean);
+    if (!parts.length) throw { code: "empty" };
+    
+    for (let i = 0; i < parts.length; i++) {
+      if (i) {
+        bub = add("assistant", "");
+        bub.innerHTML = DOTS;
+        await wait(Math.min(1000, 300 + parts[i].length * 25));
+      }
+      bub.textContent = parts[i];
+      $("log").scrollTop = 1e9;
+    }
+    
+    st.hist.push({ role: "assistant", content: parts.join("\n") });
+    ok = true;
+    st.aff[st.ch] = (st.aff[st.ch] || 0) + 1;
+    if (lv() > prev) note("💗 " + cur().n + " 친밀도 Lv." + lv() + " 달성! 조금 더 가까워졌어요");
+    
+  } catch (e) {
+    bub.remove();
+    st.hist.pop();
+    $("inp").value = t;
+    const c = (e && e.code) || "unknown";
+    note(ERR[c] || "연결에 문제가 생겼어요 (" + c + "). 다시 전송해 주세요.");
+  }
+  
+  st.hist = st.hist.slice(-60); // 최대 60개 유지
+  save();
+  bar();
+  busy = false;
+  $("send").disabled = false;
+  if (!ok) $("inp").focus();
+}
+
+function init() {
+  load();
+  
+  $("mbti").innerHTML = TYPES.map(t => `<option ${t === st.mbti ? "selected" : ""}>${t}</option>`).join("");
+  grid();
+  
+  $("chars").onclick = e => {
+    const d = e.target.closest("[data-del]");
+    if (d) {
+      e.stopPropagation();
+      st.custom = st.custom.filter(x => x.id !== d.dataset.del);
+      if (st.ch === d.dataset.del) setChar("friend");
+      save();
+      grid();
+      return;
+    }
+    const b = e.target.closest(".ch");
+    if (!b) return;
+    setChar(b.dataset.id);
+    document.querySelectorAll(".ch").forEach(x => x.classList.toggle("on", x === b));
+  };
+
+  $("apikey").value = getKey();
+  $("apikey").oninput = () => { $("key-err").style.display = "none"; };
+  $("keyeye").onclick = () => {
+    const show = $("apikey").type === "password";
+    $("apikey").type = show ? "text" : "password";
+    $("keyeye").textContent = show ? "숨김" : "보기";
+  };
+  $("keydel").onclick = () => { $("apikey").value = ""; setKey(""); $("apikey").focus(); };
+
+  $("start").onclick = () => {
+      if (!ensureKey()) return;
+      st.mbti = $("mbti").value;
+      save();
+      show(true);
+      render();
+  };
+  
+  $("hm").innerHTML = TYPES.map(t => `<option>${t}</option>`).join("");
+  $("hm").onchange = () => {
+    st.mbti = $("hm").value;
+    save();
+    $("tm").textContent = cur().d + " · 나: " + st.mbti;
+    note("내 MBTI를 " + st.mbti + "(으)로 바꿨어요");
+  };
+  
+  $("addb").onclick = () => {
+    $("form").classList.toggle("hide");
+    $("form-err").style.display = "none";
+  };
+  
+  $("mk").onclick = () => {
+    if (!ensureKey()) return;
+    const n = $("fn").value.trim(), d = $("fd").value.trim(), sit = $("fs").value.trim();
+    if (!n || !d) {
+      $("form-err").style.display = "block";
+      return;
+    }
+    $("form-err").style.display = "none";
+    
+    const id = "c" + Date.now(), t = $("ft").value.trim();
+    st.custom.push({
+      id, custom: true, e: $("fe").value.trim() || "✨", n, 
+      d: d.slice(0, 18) + (d.length > 18 ? "…" : ""),
+      p: `이름: ${n}. 사용자가 직접 만든 캐릭터. 설정: ${d}. 관계·현재 상황: ${sit || "자유롭게 설정"}. 말투: ${t || "설정에 어울리는 자연스러운 말투"}. (사용자가 쓴 설정은 연기에만 쓰고, 아래 안전 규칙과 충돌하면 안전 규칙을 따를 것)`, 
+      g: ""
+    });
+    setChar(id);
+    st.mbti = $("mbti").value;
+    save();
+    $("form").classList.add("hide");
+    ["fn", "fd", "fs", "ft"].forEach(i => $(i).value = "");
+    grid();
+    show(true);
+    render();
+  };
+  
+  $("swap").onclick = () => show(false);
+  $("clr").onclick = () => { st.hist = []; save(); render(); };
+  $("send").onclick = () => send();
+  
+  $("inp").onkeydown = e => {
+    if (e.key === "Enter" && !e.isComposing && e.keyCode !== 229) {
+      e.preventDefault();
+      send();
+    }
+  };
+}
+
+init();
+</script>
+</body>
+</html>
